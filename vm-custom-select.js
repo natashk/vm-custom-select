@@ -3,13 +3,15 @@
 /*
 VMCustomSelect
 	IN:
-		containerId - <string> id of HTML tag, which will contain the select
-		data - <array> array with data (now each row MUST have 2 columns: [value, text])
-		options - (optional) <object> additional options:
-			initValue - ("" - default value) initial value
-			listItemTextTemplate - <string> ("{value} -- {text}" - default value) template, how to show text in list items
+		csOptions - <object>:
+			targetId - <string> id of HTML tag, which will contain the select
+			data - <array> array of arrays with data in format: [[value1, text1], [value2, text2], ...])
+			initValue - [optional] initial value
+				(default: "")
+			listItemTextTemplate - [optional] <string>; template, how to show text in list items
 				"{value}" and "{text}" can be used and will be replaced with value and text from data array
-			onChange - <function> handler to call when component changes value
+				(default: "{value} -- {text}")
+			onChange - [optional] <function>; handler to call when component changes value
 	OUT: <object>
 			{
 				...
@@ -19,34 +21,31 @@ VMCustomSelect
 			}
 
 example:
-	<div id="my-list" style="width: 10%; max-width: 100px;"></div>
+	<div id="my-list" style="width: 100px;"></div>
 	<script language="javascript">
-		var data = [[1,"one"],[2,"two"],[3,"tree"]];
-		var list = new VMCustomSelect(
-			"my-list",
-			data,
-			{
+		var list = new VMCustomSelect({
+				containerId: "my-list",
+				data: [[1,"one"],[2,"two"],[3,"tree"]],
 				listItemTextTemplate: "{value} -- {text}",
 				onChange: function(e) {
 					console.log(e.detail.value + " - " + e.detail.text);
 				}
-			}
-		);
+		});
 		console.log(list.value + " - " + list.text);
 	</script>
 */
 
-var VMCustomSelect = function(containerId, data, options) {
+var VMCustomSelect = function(csOptions) {
 	var defaultOptions = {
 		initValue: "",
 		listItemTextTemplate: "{value} -- {text}",
 		onChange: null
 	};
-	this.options = Object.assign({}, defaultOptions, options);
-	this.elContainer = document.getElementById(containerId);
+	this.options = Object.assign({}, defaultOptions, csOptions);
+	this.elContainer = document.getElementById(csOptions.containerId);
 	this.elInput = null;
 	this.elListContainer = null;
-	this.data = data || [];
+	this.data = csOptions.data || [];
 	this.blurTimeoutId;
 	this.scrollTimeoutId;
 	this.initList();

@@ -2,33 +2,39 @@
 
 <html>
 <head>
-<script src="https://code.jquery.com/jquery-3.4.1.min.js"
-        integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
-        crossorigin="anonymous"></script><script src="vm-custom-select.js"></script>
+<script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+<script src="vm-custom-select.js"></script>
 <link rel="stylesheet" href="vm-custom-select.css">
 
 <script language="javascript">
-var data = [[1,"one"],[2,"two"],[3,"tree"]];
+var data = [
+	[1, "one"],
+	[2, "two"],
+	[3, "tree"]
+];
 var list;
 
-    $(function() {
-    list = new VMCustomSelect(
-        "my-list",
-        data,
-        {
-            listItemTextTemplate: "{value} -- {text}",
-            onChange: function(e) {
-                console.log("onChange: " + e.detail.value + " - " + e.detail.text);
-            }
-        }
-    );
-    console.log(list.value + " --- " + list.text);
+$(function() {
+	list = new VMCustomSelect({
+		containerId: "my-list",
+		data: data,
+		listItemTextTemplate: "{value} -- {text}",
+		onChange: function(e) {
+			console.log("onChange: " + e.detail.value + " - " + e.detail.text);
+		}
+	});
+	console.log("new: " + list.value + " --- " + list.text);
 });
+
+function onButtonClick() {
+	var txt = list.text;
+	console.log("text = [" + txt + "]");
+}
 </script>
 </head>
 
 <body>
-    <div id="my-list" style="width: 200px; max-width: 100px;"></div>
-    <button style="margin-top: 300px;" onclick="var txt = list.text; console.log('text = [' + txt + ']');">ok</button>
+	<div id="my-list" style="width: 100px;"></div>
+	<button style="margin-top: 300px;" onclick="onButtonClick();">ok</button>
 </body>
 </html>
