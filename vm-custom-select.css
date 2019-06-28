@@ -1,10 +1,10 @@
-.vm-select-input {
+.vm-cs-input {
 	width: 100%;
 }
-.vm-select-list-container {
+.vm-cs-list-container {
 	position: relative;
 }
-.vm-select-list-container ul {
+.vm-cs-list-container ul {
 	margin: 0;
 	padding: 0;
 	width: 100%;
@@ -15,7 +15,7 @@
 	background-color: #fff;
 	border: solid 1px #aaa;
 }
-.vm-select-list-container li {
+.vm-cs-list-container li {
 	list-style: none;
 	margin: 1px;
 	padding: 2px;
@@ -23,12 +23,12 @@
 	color: #555;
 	border: solid 1px #d3d3d3;
 }
-.vm-select-list-container li:hover {
+.vm-cs-list-container li:hover {
 	background: linear-gradient(#fff, #dcf1fd);
 }
-.vm-select-list-container li.selected {
+.vm-cs-list-container li.vm-cs-selected {
 	background: linear-gradient(#fff, #7fd6f9);
 }
-.vm-select-list-container.hide, .vm-select-list-container li.hide {
+.vm-cs-list-container.vm-cs-hide, .vm-cs-list-container li.vm-cs-hide {
 	display: none;
 }

@@ -12,29 +12,31 @@ var data = [
 	[2, "two"],
 	[3, "tree"]
 ];
-var list;
+var list1, list2;
 
 $(function() {
-	list = new VMCustomSelect({
-		containerId: "my-list",
+	list1 = new VMCustomSelect({containerId: "my-list1"});
+	list2 = new VMCustomSelect({
+		containerId: "my-list2",
 		data: data,
 		listItemTextTemplate: "{value} -- {text}",
 		onChange: function(e) {
 			console.log("onChange: " + e.detail.value + " - " + e.detail.text);
 		}
 	});
-	console.log("new: " + list.value + " --- " + list.text);
+	console.log("new: " + list2.value + " --- " + list2.text);
 });
 
 function onButtonClick() {
-	var txt = list.text;
+	var txt = list2.text;
 	console.log("text = [" + txt + "]");
 }
 </script>
 </head>
 
 <body>
-	<div id="my-list" style="width: 100px;"></div>
+	<div id="my-list1" style="width: 100px;"></div>
+	<div id="my-list2" style="width: 100px;"></div>
 	<button style="margin-top: 300px;" onclick="onButtonClick();">ok</button>
 </body>
 </html>

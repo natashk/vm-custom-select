@@ -5,7 +5,8 @@ VMCustomSelect
 	IN:
 		csOptions - <object>:
 			targetId - <string> id of HTML tag, which will contain the select
-			data - <array> array of arrays with data in format: [[value1, text1], [value2, text2], ...])
+			data - [optional] <array> array of arrays with data in format: [[value1, text1], [value2, text2], ...])
+				(default: [])
 			initValue - [optional] initial value
 				(default: "")
 			listItemTextTemplate - [optional] <string>; template, how to show text in list items
@@ -36,55 +37,71 @@ example:
 */
 
 var VMCustomSelect = function(csOptions) {
+	if(typeof(csOptions) !== "object" || csOptions.containerId === undefined) {
+		console.log("VMCustomSelect: Required parameters not provided.");
+		return;
+	}
+	this.elContainer = document.getElementById(csOptions.containerId);
+	if(!this.elContainer) {
+		console.log("VMCustomSelect: No HTML element with id = \"" + csOptions.containerId + "\".");
+		return;
+	}
+	this.elInput = null;
+	this.elListContainer = null;
+	this.blurTimeoutId;
+	this.scrollTimeoutId;
 	var defaultOptions = {
+		data: [],
 		initValue: "",
 		listItemTextTemplate: "{value} -- {text}",
 		onChange: null
 	};
 	this.options = Object.assign({}, defaultOptions, csOptions);
-	this.elContainer = document.getElementById(csOptions.containerId);
-	this.elInput = null;
-	this.elListContainer = null;
-	this.data = csOptions.data || [];
-	this.blurTimeoutId;
-	this.scrollTimeoutId;
 	this.initList();
 }
 
-VMCustomSelect.prototype.initList = function() {
-	var data = this.data;
+VMCustomSelect.prototype.buildGUI = function() {
 	var options = this.options;
+	var data = options.data;
 	var thisList = this;
 
 	var elInput = this.elInput = document.createElement("input");
-	elInput.className = "vm-select-input";
+	elInput.className = "vm-cs-input";
 	this.elContainer.appendChild(elInput);
 
 	var elListContainer = this.elListContainer = document.createElement("div");
-	elListContainer.classList.add("vm-select-list-container");
+	elListContainer.className = "vm-cs-list-container";
 
-	var elUl = document.createElement("ul");
-	var elLi, liText;
+	var elList = this.elList = document.createElement("ul");
+	var elListItem, liText;
 	for(var i = 0, len = data.length; i < len; i++) {
-		elLi = document.createElement("li");
-		elLi.setAttribute("data-id",data[i][0]);
-		elLi.setAttribute("data-text",data[i][1]);
+		elListItem = document.createElement("li");
+		elListItem.setAttribute("data-id",data[i][0]);
+		elListItem.setAttribute("data-text",data[i][1]);
 		if (options.initValue === data[i][0]) {
-			elLi.classList.add("selected");
+			elListItem.classList.add("vm-cs-selected");
 		}
 		liText = options.listItemTextTemplate.replace("{value}",data[i][0]).replace("{text}",data[i][1]);
-		elLi.appendChild(document.createTextNode(liText));
-		elLi.addEventListener("click", function(e) {
+		elListItem.appendChild(document.createTextNode(liText));
+		elListItem.addEventListener("click", function(e) {
 			e.preventDefault();
 			thisList.onListItemClick(this);
 		});
 
-		elUl.appendChild(elLi);
+		elList.appendChild(elListItem);
 	}
-	elListContainer.appendChild(elUl);
+	elListContainer.appendChild(elList);
 
 	this.elContainer.appendChild(elListContainer);
+}
 
+VMCustomSelect.prototype.initList = function() {
+	var options = this.options;
+	var thisList = this;
+	this.buildGUI();
+	var elListContainer = this.elListContainer;
+	var elInput = this.elInput;
+	var elList = this.elList;
 
 	// event handlers
 	elInput.addEventListener("focus", function() {
@@ -104,10 +121,10 @@ VMCustomSelect.prototype.initList = function() {
 	});
 	elInput.addEventListener("input", function() {
 		thisList.filterList();
-		var selected = elListContainer.querySelector("li.selected");
-		if(selected) selected.classList.remove("selected");
+		var selected = elListContainer.querySelector("li.vm-cs-selected");
+		if(selected) selected.classList.remove("vm-cs-selected");
 	});
-	elUl.addEventListener("scroll", function() {
+	elList.addEventListener("scroll", function() {
 		clearTimeout(thisList.blurTimeoutId);
 		clearTimeout(thisList.scrollTimeoutId);
 		thisList.scrollTimeoutId = setTimeout((function(){
@@ -123,11 +140,11 @@ VMCustomSelect.prototype.initList = function() {
 		clearTimeout(thisList.blurTimeoutId);
 		clearTimeout(thisList.scrollTimeoutId);
 		if(typeof(options.onChange) === "function") options.onChange(e);
-		elListContainer.classList.add("hide");
+		elListContainer.classList.add("vm-cs-hide");
 	});
 	//elInput.addEventListener("vmChange", options.onChange);
 
-	var selected = elListContainer.querySelector("li.selected");
+	var selected = elListContainer.querySelector("li.vm-cs-selected");
 	if(selected) {
 		this.setValue(selected.getAttribute("data-id"), selected.getAttribute("data-text"));
 	}
@@ -138,11 +155,11 @@ VMCustomSelect.prototype.initList = function() {
 }
 
 VMCustomSelect.prototype.showList = function() {
-	this.elListContainer.classList.remove("hide");
+	this.elListContainer.classList.remove("vm-cs-hide");
 	this.filterList();
 }
 VMCustomSelect.prototype.hideList = function() {
-	this.elListContainer.classList.add("hide");
+	this.elListContainer.classList.add("vm-cs-hide");
 }
 
 VMCustomSelect.prototype.filterList = function() {
@@ -152,19 +169,19 @@ VMCustomSelect.prototype.filterList = function() {
 	for(var i = 0, len = listItems.length; i < len; i++) {
 		li = listItems[i];
 		if(li.getAttribute("data-id").toLowerCase().indexOf(val) === -1 && li.getAttribute("data-text").toLowerCase().indexOf(val) === -1) {
-			li.classList.add("hide");
+			li.classList.add("vm-cs-hide");
 		}
 		else {
-			li.classList.remove("hide");
+			li.classList.remove("vm-cs-hide");
 		}
 	}
 }
 
 VMCustomSelect.prototype.onListItemClick = function(li) {
 	this.setValue(li.getAttribute("data-id"), li.getAttribute("data-text"));
-	var selected = this.elListContainer.querySelector("li.selected");
-	if(selected) selected.classList.remove("selected");
-	li.classList.add("selected");
+	var selected = this.elListContainer.querySelector("li.vm-cs-selected");
+	if(selected) selected.classList.remove("vm-cs-selected");
+	li.classList.add("vm-cs-selected");
 }
 
 VMCustomSelect.prototype.setValue = function(value, text) {
@@ -176,8 +193,8 @@ VMCustomSelect.prototype.setValue = function(value, text) {
 
 VMCustomSelect.prototype.clear = function() {
 	this.setValue("","");
-	var selected = this.elListContainer.querySelector("li.selected");
-	if(selected) selected.classList.remove("selected");
+	var selected = this.elListContainer.querySelector("li.vm-cs-selected");
+	if(selected) selected.classList.remove("vm-cs-selected");
 }
 
 VMCustomSelect.prototype.destroy = function() {
