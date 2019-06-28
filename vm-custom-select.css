@@ -1,0 +1,34 @@
+.vm-select-input {
+	width: 100%;
+}
+.vm-select-list-container {
+	position: relative;
+}
+.vm-select-list-container ul {
+	margin: 0;
+	padding: 0;
+	width: 100%;
+	height: 200px;
+	overflow: auto;
+	position: absolute;
+	z-index: 100;
+	background-color: #fff;
+	border: solid 1px #aaa;
+}
+.vm-select-list-container li {
+	list-style: none;
+	margin: 1px;
+	padding: 2px;
+	background: linear-gradient(#fff, #e6e6e6);
+	color: #555;
+	border: solid 1px #d3d3d3;
+}
+.vm-select-list-container li:hover {
+	background: linear-gradient(#fff, #dcf1fd);
+}
+.vm-select-list-container li.selected {
+	background: linear-gradient(#fff, #7fd6f9);
+}
+.vm-select-list-container.hide, .vm-select-list-container li.hide {
+	display: none;
+}
