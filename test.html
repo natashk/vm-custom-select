@@ -7,36 +7,63 @@
 <link rel="stylesheet" href="vm-custom-select.css">
 
 <script language="javascript">
-var data = [
+var data1 = [
 	[1, "one"],
 	[2, "two"],
 	[3, "tree"]
 ];
-var list1, list2;
+var data2 = [
+	[1, "one"],
+	[2, "two"],
+	[3, "tree"],
+	[4, "four"],
+	[5, "five"],
+	[6, "six"],
+	[7, "seven"],
+	[8, "eight"],
+	[9, "nine"],
+	[10, "ten"],
+	[11, "eleven"],
+	[12, "twelve"]
+];
+var list1, list2, list3;
 
 $(function() {
-	list1 = new VMCustomSelect({containerId: "my-list1"});
-	list2 = new VMCustomSelect({
-		containerId: "my-list2",
-		data: data,
+	list1 = new VMCustomSelect({
+		containerId: "my-list1",
+		data: data1,
 		listItemTextTemplate: "{value} -- {text}",
-		onChange: function(e) {
-			console.log("onChange: " + e.detail.value + " - " + e.detail.text);
+		onChange: function(params) {
+			console.log("onChange: " + params.value + " - " + params.text);
 		}
 	});
-	console.log("new: " + list2.value + " --- " + list2.text);
+	//console.log("new: " + list1.value + " --- " + list2.text);
+
+	list2 = new VMCustomSelect({
+		containerId: "my-list2",
+		data: data2,
+		listItemTextTemplate: "[{value}] {text}",
+		onChange: function(params) {
+			console.log("onChange: " + params.value + " - " + params.text);
+		}
+	});
+
+	list2 = new VMCustomSelect({containerId: "my-list3"});
 });
 
 function onButtonClick() {
-	var txt = list2.text;
+	var txt = list1.text;
 	console.log("text = [" + txt + "]");
 }
 </script>
 </head>
 
 <body>
-	<div id="my-list1" style="width: 100px;"></div>
-	<div id="my-list2" style="width: 100px;"></div>
-	<button style="margin-top: 300px;" onclick="onButtonClick();">ok</button>
+	<div style="display: flex;">
+		<div id="my-list1" style="width: 100px;"></div>
+		<div id="my-list2" style="width: 100px; margin: 0 30px;"></div>
+		<div id="my-list3" style="width: 100px;"></div>
+	</div>
+	<button style="margin-top: 220px;" onclick="onButtonClick();">ok</button>
 </body>
 </html>

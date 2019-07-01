@@ -28,8 +28,8 @@ example:
 				containerId: "my-list",
 				data: [[1,"one"],[2,"two"],[3,"tree"]],
 				listItemTextTemplate: "{value} -- {text}",
-				onChange: function(e) {
-					console.log(e.detail.value + " - " + e.detail.text);
+				onChange: function(params) {
+					console.log(params.value + " - " + params.text);
 				}
 		});
 		console.log(list.value + " - " + list.text);
@@ -46,10 +46,10 @@ var VMCustomSelect = function(csOptions) {
 		console.log("VMCustomSelect: No HTML element with id = \"" + csOptions.containerId + "\".");
 		return;
 	}
+	this.value = "";
+	this.text = "";
 	this.elInput = null;
 	this.elListContainer = null;
-	this.blurTimeoutId;
-	this.scrollTimeoutId;
 	var defaultOptions = {
 		data: [],
 		initValue: "",
@@ -61,102 +61,94 @@ var VMCustomSelect = function(csOptions) {
 }
 
 VMCustomSelect.prototype.buildGUI = function() {
-	var options = this.options;
-	var data = options.data;
 	var thisList = this;
+	var options = thisList.options;
+	var data = options.data;
 
-	var elInput = this.elInput = document.createElement("input");
+	var elInput = thisList.elInput = document.createElement("input");
 	elInput.className = "vm-cs-input";
-	this.elContainer.appendChild(elInput);
+	thisList.elContainer.appendChild(elInput);
 
-	var elListContainer = this.elListContainer = document.createElement("div");
+	var elListContainer = thisList.elListContainer = document.createElement("div");
 	elListContainer.className = "vm-cs-list-container";
 
-	var elList = this.elList = document.createElement("ul");
+	var elList = thisList.elList = document.createElement("ul");
 	var elListItem, liText;
 	for(var i = 0, len = data.length; i < len; i++) {
+		var currValue = data[i][0];
+		var currText = data[i][1];
 		elListItem = document.createElement("li");
-		elListItem.setAttribute("data-id",data[i][0]);
-		elListItem.setAttribute("data-text",data[i][1]);
-		if (options.initValue === data[i][0]) {
-			elListItem.classList.add("vm-cs-selected");
-		}
-		liText = options.listItemTextTemplate.replace("{value}",data[i][0]).replace("{text}",data[i][1]);
+		elListItem.setAttribute("data-id",currValue);
+		elListItem.setAttribute("data-text",currText);
+		liText = options.listItemTextTemplate.replace("{value}",currValue).replace("{text}",currText);
 		elListItem.appendChild(document.createTextNode(liText));
-		elListItem.addEventListener("click", function(e) {
-			e.preventDefault();
-			thisList.onListItemClick(this);
-		});
-
+		if (options.initValue === currValue) {
+			elListItem.classList.add("vm-cs-selected");
+			thisList.value = currValue;
+			thisList.text = currText;
+			elInput.value = currText;
+		}
 		elList.appendChild(elListItem);
 	}
 	elListContainer.appendChild(elList);
 
-	this.elContainer.appendChild(elListContainer);
+	thisList.elContainer.appendChild(elListContainer);
+	thisList.elContainer.tabIndex = 0;
 }
 
 VMCustomSelect.prototype.initList = function() {
-	var options = this.options;
 	var thisList = this;
 	this.buildGUI();
 	var elListContainer = this.elListContainer;
 	var elInput = this.elInput;
-	var elList = this.elList;
+	thisList.hideList();
 
+	
 	// event handlers
 	elInput.addEventListener("focus", function() {
+console.log("elInput focus");
 		thisList.showList();
 	});
-	elInput.addEventListener("blur", function() {
-		thisList.blurTimeoutId = setTimeout((function(){
-			var elInput = this.elInput;
-			var inputVal = elInput.value;
-			if(this.text !== inputVal) {
-				this.setValue("",inputVal);
-			}
-			else {
-				this.hideList();
-			}
-		}).bind(thisList),500);
+
+	elInput.addEventListener("blur", function(e) {
+console.log("elInput blur");
+		/*
+			in IE e.relatedTarget always null, and document.activeElement is focused element
+			in FF and Chrome e.relatedTarget is focused element, and document.activeElement is always body element
+		*/
+		if(e.relatedTarget && e.relatedTarget === thisList.elContainer || document.activeElement === thisList.elContainer) {
+
+		}
+		else {
+			thisList.value = "";
+			thisList.text = thisList.elInput.value;
+			thisList.onValueChanged();
+		}
 	});
+
 	elInput.addEventListener("input", function() {
 		thisList.filterList();
 		var selected = elListContainer.querySelector("li.vm-cs-selected");
 		if(selected) selected.classList.remove("vm-cs-selected");
 	});
-	elList.addEventListener("scroll", function() {
-		clearTimeout(thisList.blurTimeoutId);
-		clearTimeout(thisList.scrollTimeoutId);
-		thisList.scrollTimeoutId = setTimeout((function(){
-			//finished scrolling
-			this.elInput.focus();
-		}).bind(thisList),500);
+
+	var listItems = elListContainer.querySelectorAll("li");
+	Array.prototype.forEach.call(listItems, function(elListItem) {
+		elListItem.addEventListener("click", function() {
+console.log("elListItem click");
+			thisList.onListItemClick(this);
+		});
 	});
 
-	this.evChange = new CustomEvent('vmChange', {
-		detail: thisList
+	thisList.elList.addEventListener("scroll", function() {
+		//finished scrolling
+		thisList.elInput.focus();
 	});
-	elInput.addEventListener("vmChange", function(e) {
-		clearTimeout(thisList.blurTimeoutId);
-		clearTimeout(thisList.scrollTimeoutId);
-		if(typeof(options.onChange) === "function") options.onChange(e);
-		elListContainer.classList.add("vm-cs-hide");
-	});
-	//elInput.addEventListener("vmChange", options.onChange);
-
-	var selected = elListContainer.querySelector("li.vm-cs-selected");
-	if(selected) {
-		this.setValue(selected.getAttribute("data-id"), selected.getAttribute("data-text"));
-	}
-	else {
-		this.setValue("","");
-	}
-	this.hideList();
 }
 
 VMCustomSelect.prototype.showList = function() {
 	this.elListContainer.classList.remove("vm-cs-hide");
-	this.filterList();
+	//this.filterList();
 }
 VMCustomSelect.prototype.hideList = function() {
 	this.elListContainer.classList.add("vm-cs-hide");
@@ -178,19 +170,26 @@ VMCustomSelect.prototype.filterList = function() {
 }
 
 VMCustomSelect.prototype.onListItemClick = function(li) {
-	this.setValue(li.getAttribute("data-id"), li.getAttribute("data-text"));
 	var selected = this.elListContainer.querySelector("li.vm-cs-selected");
 	if(selected) selected.classList.remove("vm-cs-selected");
 	li.classList.add("vm-cs-selected");
+	this.value = li.getAttribute("data-id");
+	this.text = this.elInput.value = li.getAttribute("data-text");
+	this.onValueChanged();
 }
 
-VMCustomSelect.prototype.setValue = function(value, text) {
-	this.elInput.value = text;
-	this.value = value;
-	this.text = text;
-	this.elInput.dispatchEvent(this.evChange);
+VMCustomSelect.prototype.onValueChanged = function() {
+	var options = this.options;
+	if(typeof(options.onChange) === "function") {
+		options.onChange({
+			value: this.value,
+			text: this.text
+		});
+	}
+	this.hideList();
 }
 
+/*
 VMCustomSelect.prototype.clear = function() {
 	this.setValue("","");
 	var selected = this.elListContainer.querySelector("li.vm-cs-selected");
@@ -207,7 +206,7 @@ VMCustomSelect.prototype.destroy = function() {
 		delete thisList[val];
 	});
 }
-
+*/
 
 
 /**************************************/
@@ -242,18 +241,3 @@ if (typeof Object.assign != 'function') {
 		configurable: true
 	});
 }
-
-// Polyfill for CustomEvent()
-(function () {
-	if ( typeof window.CustomEvent === "function" ) return false;
-
-	function CustomEvent ( event, params ) {
-		params = params || { bubbles: false, cancelable: false, detail: undefined };
-		var evt = document.createEvent( 'CustomEvent' );
-		evt.initCustomEvent( event, params.bubbles, params.cancelable, params.detail );
-		return evt;
-	}
-
-	CustomEvent.prototype = window.Event.prototype;
-	window.CustomEvent = CustomEvent;
-})();
