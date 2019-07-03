@@ -88,6 +88,7 @@ VMCustomSelect.prototype.buildGUI = function() {
 			thisList.text = currText;
 			elInput.value = currText;
 		}
+		elListItem.tabIndex = 0;
 		elList.appendChild(elListItem);
 	}
 	elListContainer.appendChild(elList);
@@ -116,13 +117,21 @@ console.log("elInput blur");
 			in IE e.relatedTarget always null, and document.activeElement is focused element
 			in FF and Chrome e.relatedTarget is focused element, and document.activeElement is always body element
 		*/
-		if(e.relatedTarget && e.relatedTarget === thisList.elContainer || document.activeElement === thisList.elContainer) {
-
-		}
-		else {
+		var focusedElement = e.relatedTarget || document.activeElement;
+		if(focusedElement !== thisList.elContainer && focusedElement.tagName !== "LI") {
 			thisList.value = "";
 			thisList.text = thisList.elInput.value;
 			thisList.onValueChanged();
+		}
+		else {
+console.log("focusInListContainer");
+			if(focusedElement.tagName !== "LI") {
+				focusedElement.focus();
+				thisList.elInput.focus();
+			}
+			else {
+console.log("focusOnListItem");
+			}
 		}
 	});
 
