@@ -126,8 +126,16 @@ console.log("elInput blur");
 		else {
 console.log("focusInListContainer");
 			if(focusedElement.tagName !== "LI") {
-				focusedElement.focus();
 				thisList.elInput.focus();
+console.log(document.activeElement);
+				if(document.activeElement !== thisList.elInput) {
+					/*
+						For FF only because of bug https://bugzilla.mozilla.org/show_bug.cgi?id=53579
+						focus doesn't move into input inside of onblur event.
+						So try to do it out of the event (in timeout).
+					*/
+					setTimeout(function() { thisList.elInput.focus(); }, 0);
+				}
 			}
 			else {
 console.log("focusOnListItem");
