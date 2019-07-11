@@ -26,6 +26,20 @@ var data2 = [
 	[11, "eleven"],
 	[12, "twelve"]
 ];
+var data3 = [
+	[12, "twelve"],
+	[11, "eleven"],
+	[10, "ten"],
+	[9, "nine"],
+	[8, "eight"],
+	[7, "seven"],
+	[6, "six"],
+	[5, "five"],
+	[4, "four"],
+	[3, "tree"],
+	[2, "two"],
+	[1, "one"],
+];
 var list1, list2, list3;
 
 $(function() {
@@ -43,6 +57,7 @@ $(function() {
 		containerId: "my-list2",
 		data: data2,
 		listItemTextTemplate: "[{value}] {text}",
+		initValue: 1,
 		onChange: function(params) {
 			console.log("onChange: " + params.value + " - " + params.text);
 		}
@@ -55,6 +70,23 @@ function onButtonClick() {
 	var txt = list1.text;
 	console.log("text = [" + txt + "]");
 }
+
+function destroy2() {
+	list2.destroy();
+	list2 = null;
+}
+
+function recreate2() {
+	list2 = new VMCustomSelect({
+		containerId: "my-list2",
+		data: data3,
+		listItemTextTemplate: "[{value}] {text}",
+		initValue: 7,
+		onChange: function(params) {
+			console.log("onChange: " + params.value + " - " + params.text);
+		}
+	});
+}
 </script>
 </head>
 
@@ -65,5 +97,7 @@ function onButtonClick() {
 		<div id="my-list3" style="width: 100px;"></div>
 	</div>
 	<button style="margin-top: 220px;" onclick="onButtonClick();">ok</button>
+	<button onclick="destroy2();">destroy</button>
+	<button onclick="recreate2();">recreate</button>
 </body>
 </html>

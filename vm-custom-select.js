@@ -61,18 +61,17 @@ var VMCustomSelect = function(csOptions) {
 }
 
 VMCustomSelect.prototype.buildGUI = function() {
-	var thisList = this;
-	var options = thisList.options;
+	var options = this.options;
 	var data = options.data;
 
-	var elInput = thisList.elInput = document.createElement("input");
+	var elInput = this.elInput = document.createElement("input");
 	elInput.className = "vm-cs-input";
-	thisList.elContainer.appendChild(elInput);
+	this.elContainer.appendChild(elInput);
 
-	var elListContainer = thisList.elListContainer = document.createElement("div");
+	var elListContainer = this.elListContainer = document.createElement("div");
 	elListContainer.className = "vm-cs-list-container";
 
-	var elList = thisList.elList = document.createElement("ul");
+	var elList = this.elList = document.createElement("ul");
 	var elListItem, liText;
 	for(var i = 0, len = data.length; i < len; i++) {
 		var currValue = data[i][0];
@@ -84,8 +83,8 @@ VMCustomSelect.prototype.buildGUI = function() {
 		elListItem.appendChild(document.createTextNode(liText));
 		if (options.initValue === currValue) {
 			elListItem.classList.add("vm-cs-selected");
-			thisList.value = currValue;
-			thisList.text = currText;
+			this.value = currValue;
+			this.text = currText;
 			elInput.value = currText;
 		}
 		elListItem.tabIndex = 0;
@@ -93,79 +92,31 @@ VMCustomSelect.prototype.buildGUI = function() {
 	}
 	elListContainer.appendChild(elList);
 
-	thisList.elContainer.appendChild(elListContainer);
-	thisList.elContainer.tabIndex = 0;
+	this.elContainer.appendChild(elListContainer);
+	this.elContainer.tabIndex = 0;
 }
 
 VMCustomSelect.prototype.initList = function() {
-	var thisList = this;
 	this.buildGUI();
-	var elListContainer = this.elListContainer;
-	var elInput = this.elInput;
-	thisList.hideList();
-
+	this.hideList();
 	
 	// event handlers
-	elInput.addEventListener("focus", function() {
-console.log("elInput focus");
-		thisList.showList();
-	});
+	var elInput = this.elInput;
+	elInput.addEventListener("focus", this.onInputFocus.bind(this));
+	elInput.addEventListener("blur", this.onInputBlur.bind(this));
+	elInput.addEventListener("input", this.onInputInput.bind(this));
+	this.elList.addEventListener("scroll", this.onListScroll.bind(this));
 
-	elInput.addEventListener("blur", function(e) {
-console.log("elInput blur");
-		/*
-			in IE e.relatedTarget always null, and document.activeElement is focused element
-			in FF and Chrome e.relatedTarget is focused element, and document.activeElement is always body element
-		*/
-		var focusedElement = e.relatedTarget || document.activeElement;
-		if(focusedElement !== thisList.elContainer && focusedElement.tagName !== "LI") {
-			thisList.value = "";
-			thisList.text = thisList.elInput.value;
-			thisList.onValueChanged();
-		}
-		else {
-console.log("focusInListContainer");
-			if(focusedElement.tagName !== "LI") {
-				thisList.elInput.focus();
-console.log(document.activeElement);
-				if(document.activeElement !== thisList.elInput) {
-					/*
-						For FF only because of bug https://bugzilla.mozilla.org/show_bug.cgi?id=53579
-						focus doesn't move into input inside of onblur event.
-						So try to do it out of the event (in timeout).
-					*/
-					setTimeout(function() { thisList.elInput.focus(); }, 0);
-				}
-			}
-			else {
-console.log("focusOnListItem");
-			}
-		}
-	});
-
-	elInput.addEventListener("input", function() {
-		thisList.filterList();
-		var selected = elListContainer.querySelector("li.vm-cs-selected");
-		if(selected) selected.classList.remove("vm-cs-selected");
-	});
-
-	var listItems = elListContainer.querySelectorAll("li");
+	var thisList = this;
+	var listItems = this.elListContainer.querySelectorAll("li");
 	Array.prototype.forEach.call(listItems, function(elListItem) {
-		elListItem.addEventListener("click", function() {
-console.log("elListItem click");
-			thisList.onListItemClick(this);
-		});
-	});
-
-	thisList.elList.addEventListener("scroll", function() {
-		//finished scrolling
-		thisList.elInput.focus();
+		elListItem.addEventListener("click", thisList.onListItemClick.bind(thisList));
 	});
 }
 
 VMCustomSelect.prototype.showList = function() {
 	this.elListContainer.classList.remove("vm-cs-hide");
-	//this.filterList();
+	this.filterList();
 }
 VMCustomSelect.prototype.hideList = function() {
 	this.elListContainer.classList.add("vm-cs-hide");
@@ -186,7 +137,57 @@ VMCustomSelect.prototype.filterList = function() {
 	}
 }
 
-VMCustomSelect.prototype.onListItemClick = function(li) {
+VMCustomSelect.prototype.onInputFocus = function() {
+console.log("elInput focus");
+	this.showList();
+}
+
+VMCustomSelect.prototype.onInputBlur = function(e) {
+console.log("elInput blur");
+	/*
+		in IE e.relatedTarget always null, and document.activeElement is focused element
+		in FF and Chrome e.relatedTarget is focused element, and document.activeElement is always body element
+	*/
+	var focusedElement = e.relatedTarget || document.activeElement;
+	if(focusedElement !== this.elContainer && focusedElement.tagName !== "LI") {
+		this.value = "";
+		this.text = this.elInput.value;
+		this.onValueChanged();
+	}
+	else {
+console.log("focusInListContainer");
+		if(focusedElement.tagName !== "LI") {
+			this.elInput.focus();
+console.log(document.activeElement);
+			if(document.activeElement !== this.elInput) {
+				/*
+					For FF only because of bug https://bugzilla.mozilla.org/show_bug.cgi?id=53579
+					focus doesn't move into input inside of onblur event.
+					So try to do it out of the event (in timeout).
+				*/
+				setTimeout((function() { this.elInput.focus(); }).bind(this), 0);
+			}
+		}
+		else {
+console.log("focusOnListItem");
+		}
+	}
+}
+
+VMCustomSelect.prototype.onInputInput = function() {
+	this.filterList();
+	var selected = this.elListContainer.querySelector("li.vm-cs-selected");
+	if(selected) selected.classList.remove("vm-cs-selected");
+}
+
+VMCustomSelect.prototype.onListScroll = function() {
+	//finished scrolling
+	this.elInput.focus();
+}
+
+VMCustomSelect.prototype.onListItemClick = function(e) {
+console.log("elListItem click");
+	var li = e.currentTarget;
 	var selected = this.elListContainer.querySelector("li.vm-cs-selected");
 	if(selected) selected.classList.remove("vm-cs-selected");
 	li.classList.add("vm-cs-selected");
@@ -206,29 +207,37 @@ VMCustomSelect.prototype.onValueChanged = function() {
 	this.hideList();
 }
 
+VMCustomSelect.prototype.destroy = function() {
+	if(!this.elContainer) return;
+
+	// remove event handlers
+	var elInput = this.elInput;
+	elInput.removeEventListener("focus", this.onInputFocus);
+	elInput.removeEventListener("blur", this.onInputBlur);
+	elInput.removeEventListener("input", this.onInputInput);
+	this.elList.removeEventListener("scroll", this.onListScroll);
+
+	var thisList = this;
+	var listItems = this.elListContainer.querySelectorAll("li");
+	Array.prototype.forEach.call(listItems, function(elListItem) {
+		elListItem.removeEventListener("click", thisList.onListItemClick);
+	});
+
+	this.elContainer.innerHTML = "";
+}
+
 /*
 VMCustomSelect.prototype.clear = function() {
 	this.setValue("","");
 	var selected = this.elListContainer.querySelector("li.vm-cs-selected");
 	if(selected) selected.classList.remove("vm-cs-selected");
 }
-
-VMCustomSelect.prototype.destroy = function() {
-	if(!this.elContainer) return;
-	clearTimeout(this.blurTimeoutId);
-	clearTimeout(this.scrollTimeoutId);
-	this.elContainer.innerHTML = "";
-	var thisList = this;
-	Object.getOwnPropertyNames(thisList).forEach(function (val, idx, array) {
-		delete thisList[val];
-	});
-}
 */
 
 
 /**************************************/
 
-//Polyfill for Object.assign
+//Polyfill for Object.assign (source: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/assign)
 if (typeof Object.assign != 'function') {
 	// Must be writable: true, enumerable: false, configurable: true
 	Object.defineProperty(Object, "assign", {
