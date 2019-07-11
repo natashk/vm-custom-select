@@ -150,8 +150,6 @@ console.log("elInput blur");
 	*/
 	var focusedElement = e.relatedTarget || document.activeElement;
 	if(focusedElement !== this.elContainer && focusedElement.tagName !== "LI") {
-		this.value = "";
-		this.text = this.elInput.value;
 		this.onValueChanged();
 	}
 	else {
@@ -175,6 +173,8 @@ console.log("focusOnListItem");
 }
 
 VMCustomSelect.prototype.onInputInput = function() {
+	this.value = "";
+	this.text = this.elInput.value;
 	this.filterList();
 	var selected = this.elListContainer.querySelector("li.vm-cs-selected");
 	if(selected) selected.classList.remove("vm-cs-selected");
