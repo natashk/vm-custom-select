@@ -138,27 +138,21 @@ VMCustomSelect.prototype.filterList = function() {
 }
 
 VMCustomSelect.prototype.onInputFocus = function() {
-console.log("elInput focus");
 	this.showList();
 }
 
 VMCustomSelect.prototype.onInputBlur = function(e) {
-console.log("elInput blur");
 	/*
 		in IE e.relatedTarget always null, and document.activeElement is focused element
 		in FF and Chrome e.relatedTarget is focused element, and document.activeElement is always body element
 	*/
 	var focusedElement = e.relatedTarget || document.activeElement;
-console.log("focused element:");
-console.log(focusedElement);
 	if(focusedElement.tagName !== "LI") {
 		if(focusedElement !== this.elContainer) {
 			this.onValueChanged();
 		}
 		else {
-console.log("focusInListContainer");
 			this.elInput.focus();
-console.log(document.activeElement);
 			if(document.activeElement !== this.elInput) {
 				/*
 					For FF only because of bug https://bugzilla.mozilla.org/show_bug.cgi?id=53579
@@ -168,9 +162,6 @@ console.log(document.activeElement);
 				setTimeout((function() { this.elInput.focus(); }).bind(this), 0);
 			}
 		}
-	}
-	else {
-console.log("focusOnListItem");
 	}
 }
 
@@ -188,7 +179,6 @@ VMCustomSelect.prototype.onListScroll = function() {
 }
 
 VMCustomSelect.prototype.onListItemClick = function(e) {
-console.log("elListItem click");
 	var li = e.currentTarget;
 	var selected = this.elListContainer.querySelector("li.vm-cs-selected");
 	if(selected) selected.classList.remove("vm-cs-selected");
