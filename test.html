@@ -3,8 +3,17 @@
 <html>
 <head>
 <script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js" integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU=" crossorigin="anonymous"></script>
 <script src="vm-custom-select.js"></script>
+
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" />
 <link rel="stylesheet" href="vm-custom-select.css">
+
+<style>
+#dlg {
+	overflow: visible;
+}
+</style>
 
 <script language="javascript">
 var data1 = [
@@ -40,9 +49,27 @@ var data3 = [
 	[2, "two"],
 	[1, "one"],
 ];
-var list1, list2, list3;
+var dlg, list1, list2, list3, list4;
 
 $(function() {
+	dlg = $("#dlg").dialog({
+		autoOpen: false,
+		modal: true,
+		buttons: {
+			"Ok": onDlgOk,
+			"Close": function() {
+				dlg.dialog("close");
+			}
+		},
+		close: function() {
+			list4.destroy();
+			list4 = null;
+		},
+		resize: function( event, ui ) {
+			console.log("dialog resize");
+		}
+	});
+
 	list1 = new VMCustomSelect({
 		containerId: "my-list1",
 		data: data1,
@@ -87,6 +114,24 @@ function recreate2() {
 		}
 	});
 }
+
+function openDialog() {
+	list4 = new VMCustomSelect({
+		containerId: "my-list4",
+		data: data2,
+		listItemTextTemplate: "[{value}] {text}",
+		initValue: 8,
+		onChange: function(params) {
+			console.log("onChange: " + params.value + " - " + params.text);
+		}
+	});
+	dlg.dialog("open");
+	//dlg.dialog("option","autoResize","true");
+}
+function onDlgOk() {
+console.log("onDlgOk: " + list4.value + " --- " + list4.text);
+	dlg.dialog("close");
+}
 </script>
 </head>
 
@@ -99,5 +144,18 @@ function recreate2() {
 	<button style="margin-top: 220px;" onclick="onButtonClick();">ok</button>
 	<button onclick="destroy2();">destroy</button>
 	<button onclick="recreate2();">recreate</button>
+	<button onclick="openDialog();">in dialog</button>
+
+	<div id="dlg">
+		<div style="display: none;"><!--to prevent autofocus on first form input--><input autofocus="1"></div>
+		<label>Name: </label><div id="my-list4" style="width: 100%; max-width: 400px;"></div>
+		<select style="width: 200px;">
+			<option>1</option>
+			<option>2</option>
+			<option>3</option>
+			<option>4</option>
+			<option>5</option>
+		</select>
+	</div>
 </body>
 </html>
