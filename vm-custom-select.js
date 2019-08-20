@@ -149,12 +149,14 @@ console.log("elInput blur");
 		in FF and Chrome e.relatedTarget is focused element, and document.activeElement is always body element
 	*/
 	var focusedElement = e.relatedTarget || document.activeElement;
-	if(focusedElement !== this.elContainer && focusedElement.tagName !== "LI") {
-		this.onValueChanged();
-	}
-	else {
+console.log("focused element:");
+console.log(focusedElement);
+	if(focusedElement.tagName !== "LI") {
+		if(focusedElement !== this.elContainer) {
+			this.onValueChanged();
+		}
+		else {
 console.log("focusInListContainer");
-		if(focusedElement.tagName !== "LI") {
 			this.elInput.focus();
 console.log(document.activeElement);
 			if(document.activeElement !== this.elInput) {
@@ -166,9 +168,9 @@ console.log(document.activeElement);
 				setTimeout((function() { this.elInput.focus(); }).bind(this), 0);
 			}
 		}
-		else {
+	}
+	else {
 console.log("focusOnListItem");
-		}
 	}
 }
 
