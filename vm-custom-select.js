@@ -33,6 +33,8 @@ example:
 				}
 		});
 		console.log(list.value + " - " + list.text);
+		list.setValue(3);
+		console.log(list.value + " - " + list.text);
 	</script>
 */
 
@@ -122,6 +124,11 @@ VMCustomSelect.prototype.hideList = function() {
 	this.elListContainer.classList.add("vm-cs-hide");
 }
 
+VMCustomSelect.prototype.deselectAll = function() {
+	var selected = this.elListContainer.querySelector("li.vm-cs-selected");
+	if(selected) selected.classList.remove("vm-cs-selected");
+}
+
 VMCustomSelect.prototype.filterList = function() {
 	var val = this.elInput.value.toLowerCase();
 	var listItems = this.elListContainer.querySelectorAll("li");
@@ -169,8 +176,7 @@ VMCustomSelect.prototype.onInputInput = function() {
 	this.value = "";
 	this.text = this.elInput.value;
 	this.filterList();
-	var selected = this.elListContainer.querySelector("li.vm-cs-selected");
-	if(selected) selected.classList.remove("vm-cs-selected");
+	this.deselectAll();
 }
 
 VMCustomSelect.prototype.onListScroll = function() {
@@ -180,8 +186,7 @@ VMCustomSelect.prototype.onListScroll = function() {
 
 VMCustomSelect.prototype.onListItemClick = function(e) {
 	var li = e.currentTarget;
-	var selected = this.elListContainer.querySelector("li.vm-cs-selected");
-	if(selected) selected.classList.remove("vm-cs-selected");
+	this.deselectAll();
 	li.classList.add("vm-cs-selected");
 	this.value = li.getAttribute("data-id");
 	this.text = this.elInput.value = li.getAttribute("data-text");
@@ -197,6 +202,22 @@ VMCustomSelect.prototype.onValueChanged = function() {
 		});
 	}
 	this.hideList();
+}
+
+VMCustomSelect.prototype.setValue = function(newValue) {
+	this.deselectAll();
+	var listItems = this.elListContainer.querySelectorAll("li");
+	var li;
+	for(var i = 0, len = listItems.length; i < len; i++) {
+		li = listItems[i];
+		if(li.getAttribute("data-id").indexOf(newValue) !== -1) {
+			this.value = newValue;
+			this.text = this.elInput.value = li.getAttribute("data-text");
+			li.classList.add("vm-cs-selected");
+			return true;
+		}
+	}
+	return false;
 }
 
 VMCustomSelect.prototype.destroy = function() {
@@ -217,14 +238,6 @@ VMCustomSelect.prototype.destroy = function() {
 
 	this.elContainer.innerHTML = "";
 }
-
-/*
-VMCustomSelect.prototype.clear = function() {
-	this.setValue("","");
-	var selected = this.elListContainer.querySelector("li.vm-cs-selected");
-	if(selected) selected.classList.remove("vm-cs-selected");
-}
-*/
 
 
 /**************************************/
