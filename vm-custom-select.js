@@ -206,6 +206,11 @@ VMCustomSelect.prototype.onValueChanged = function() {
 
 VMCustomSelect.prototype.setValue = function(newValue) {
 	this.deselectAll();
+	if(!newValue) {
+		this.value = "";
+		this.text = this.elInput.value = "";
+		return true;
+	}
 	var listItems = this.elListContainer.querySelectorAll("li");
 	var li;
 	for(var i = 0, len = listItems.length; i < len; i++) {
