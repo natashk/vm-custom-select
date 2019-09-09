@@ -93,9 +93,9 @@ VMCustomSelect.prototype.buildGUI = function() {
 		elList.appendChild(elListItem);
 	}
 	elListContainer.appendChild(elList);
+	elListContainer.tabIndex = 0;
 
 	this.elContainer.appendChild(elListContainer);
-	this.elContainer.tabIndex = 0;
 }
 
 VMCustomSelect.prototype.initList = function() {
@@ -104,9 +104,10 @@ VMCustomSelect.prototype.initList = function() {
 	
 	// event handlers
 	var elInput = this.elInput;
-	elInput.addEventListener("focus", this.onInputFocus.bind(this));
+	elInput.addEventListener("click", this.onInputClick.bind(this));
 	elInput.addEventListener("blur", this.onInputBlur.bind(this));
 	elInput.addEventListener("input", this.onInputInput.bind(this));
+	elInput.addEventListener("keydown", this.onInputKeydown.bind(this));
 	this.elList.addEventListener("scroll", this.onListScroll.bind(this));
 
 	var thisList = this;
@@ -122,6 +123,14 @@ VMCustomSelect.prototype.showList = function() {
 }
 VMCustomSelect.prototype.hideList = function() {
 	this.elListContainer.classList.add("vm-cs-hide");
+}
+VMCustomSelect.prototype.toggleList = function() {
+	if(this.elListContainer.classList.contains("vm-cs-hide")) {
+		this.showList();
+	}
+	else {
+		this.hideList();
+	}
 }
 
 VMCustomSelect.prototype.deselectAll = function() {
@@ -144,8 +153,8 @@ VMCustomSelect.prototype.filterList = function() {
 	}
 }
 
-VMCustomSelect.prototype.onInputFocus = function() {
-	this.showList();
+VMCustomSelect.prototype.onInputClick = function() {
+	this.toggleList();
 }
 
 VMCustomSelect.prototype.onInputBlur = function(e) {
@@ -155,7 +164,7 @@ VMCustomSelect.prototype.onInputBlur = function(e) {
 	*/
 	var focusedElement = e.relatedTarget || document.activeElement;
 	if(focusedElement.tagName !== "LI") {
-		if(focusedElement !== this.elContainer) {
+		if(focusedElement !== this.elListContainer) {
 			this.onValueChanged();
 		}
 		else {
@@ -175,8 +184,20 @@ VMCustomSelect.prototype.onInputBlur = function(e) {
 VMCustomSelect.prototype.onInputInput = function() {
 	this.value = "";
 	this.text = this.elInput.value;
-	this.filterList();
+	this.showList();
 	this.deselectAll();
+	this.filterList();
+}
+
+VMCustomSelect.prototype.onInputKeydown = function(e) {
+	switch(e.key) {
+		case "Enter":
+			this.elInput.blur();
+			break;
+		case "Tab":
+			this.hideList();
+			break;
+		}
 }
 
 VMCustomSelect.prototype.onListScroll = function() {
@@ -185,6 +206,7 @@ VMCustomSelect.prototype.onListScroll = function() {
 }
 
 VMCustomSelect.prototype.onListItemClick = function(e) {
+	e.stopPropagation();
 	var li = e.currentTarget;
 	this.deselectAll();
 	li.classList.add("vm-cs-selected");
@@ -230,9 +252,10 @@ VMCustomSelect.prototype.destroy = function() {
 
 	// remove event handlers
 	var elInput = this.elInput;
-	elInput.removeEventListener("focus", this.onInputFocus);
+	elInput.removeEventListener("click", this.onInputClick);
 	elInput.removeEventListener("blur", this.onInputBlur);
 	elInput.removeEventListener("input", this.onInputInput);
+	elInput.removeEventListener("keydown", this.onInputKeydown);
 	this.elList.removeEventListener("scroll", this.onListScroll);
 
 	var thisList = this;
