@@ -79,6 +79,7 @@ VMCustomSelect.prototype.buildGUI = function() {
 		var currValue = data[i][0];
 		var currText = data[i][1];
 		elListItem = document.createElement("li");
+		elListItem.classList.add("vm-cs-list-item");
 		elListItem.setAttribute("data-id",currValue);
 		elListItem.setAttribute("data-text",currText);
 		liText = options.listItemTextTemplate.replace("{value}",currValue).replace("{text}",currText);
@@ -163,21 +164,20 @@ VMCustomSelect.prototype.onInputBlur = function(e) {
 		in FF and Chrome e.relatedTarget is focused element, and document.activeElement is always body element
 	*/
 	var focusedElement = e.relatedTarget || document.activeElement;
-	if(focusedElement.tagName !== "LI") {
-		if(focusedElement !== this.elListContainer) {
-			this.onValueChanged();
+	if(focusedElement.className === "vm-cs-list-item") return;
+	if(focusedElement === this.elListContainer) {
+		this.elInput.focus();
+		if(document.activeElement !== this.elInput) {
+			/*
+				For FF only because of bug https://bugzilla.mozilla.org/show_bug.cgi?id=53579
+				focus doesn't move into input inside of onblur event.
+				So try to do it out of the event (in timeout).
+			*/
+			setTimeout((function() { this.elInput.focus(); }).bind(this), 0);
 		}
-		else {
-			this.elInput.focus();
-			if(document.activeElement !== this.elInput) {
-				/*
-					For FF only because of bug https://bugzilla.mozilla.org/show_bug.cgi?id=53579
-					focus doesn't move into input inside of onblur event.
-					So try to do it out of the event (in timeout).
-				*/
-				setTimeout((function() { this.elInput.focus(); }).bind(this), 0);
-			}
-		}
+	}
+	else {
+		this.onValueChanged();
 	}
 }
 
