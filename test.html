@@ -144,7 +144,8 @@ console.log("onDlgOk: " + list4.value + " --- " + list4.text);
 	<button style="margin-top: 20px;" onclick="onButtonClick();">ok</button>
 	<button onclick="destroy2();">destroy</button>
 	<button onclick="recreate2();">recreate</button>
-	<button onclick="list2.setValue(12);">set list2 value to 12</button>
+	<button onclick="console.log(list2.setValue(12));">set list2 value to 12</button>
+	<button onclick='console.log(list2.setValue({"value":"", "text":"tw"}));'>set list2 text to "tw"</button>
 	<button onclick="openDialog();">in dialog</button>
 
 	<div id="dlg">

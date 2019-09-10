@@ -35,6 +35,8 @@ example:
 		console.log(list.value + " - " + list.text);
 		list.setValue(3);
 		console.log(list.value + " - " + list.text);
+		list.setValue({"value":"", "text":"new text"});
+		console.log(list.value + " - " + list.text);
 	</script>
 */
 
@@ -226,23 +228,38 @@ VMCustomSelect.prototype.onValueChanged = function() {
 	this.hideList();
 }
 
-VMCustomSelect.prototype.setValue = function(newValue) {
-	this.deselectAll();
-	if(!newValue) {
-		this.value = "";
-		this.text = this.elInput.value = "";
-		return true;
+VMCustomSelect.prototype.setValue = function(newSelectValue) {
+	var newValue, newText;
+	if(typeof(newSelectValue) === "object") {
+		newValue = newSelectValue["value"];
+		newText = newSelectValue["text"];
+console.log("object");
 	}
-	var listItems = this.elListContainer.querySelectorAll("li");
-	var li;
-	for(var i = 0, len = listItems.length; i < len; i++) {
-		li = listItems[i];
-		if(li.getAttribute("data-id").indexOf(newValue) !== -1) {
-			this.value = newValue;
-			this.text = this.elInput.value = li.getAttribute("data-text");
-			li.classList.add("vm-cs-selected");
-			return true;
+	else {
+		newValue = newSelectValue;
+console.log("just value");
+	}
+
+	if(newValue) {
+		var listItems = this.elListContainer.querySelectorAll("li");
+		var li;
+		for(var i = 0, len = listItems.length; i < len; i++) {
+			li = listItems[i];
+			if(li.getAttribute("data-id").indexOf(newSelectValue) !== -1) {
+				this.value = newSelectValue;
+				this.text = this.elInput.value = li.getAttribute("data-text");
+				this.deselectAll();
+				li.classList.add("vm-cs-selected");
+				return true;
+			}
 		}
+	}
+	else {
+		if(!newText) newText = "";
+		this.value = "";
+		this.text = this.elInput.value = newText;
+		this.deselectAll();
+		return true;
 	}
 	return false;
 }
