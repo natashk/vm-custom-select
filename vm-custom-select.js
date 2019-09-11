@@ -233,11 +233,9 @@ VMCustomSelect.prototype.setValue = function(newSelectValue) {
 	if(typeof(newSelectValue) === "object") {
 		newValue = newSelectValue["value"];
 		newText = newSelectValue["text"];
-console.log("object");
 	}
 	else {
 		newValue = newSelectValue;
-console.log("just value");
 	}
 
 	if(newValue) {
@@ -245,8 +243,8 @@ console.log("just value");
 		var li;
 		for(var i = 0, len = listItems.length; i < len; i++) {
 			li = listItems[i];
-			if(li.getAttribute("data-id").indexOf(newSelectValue) !== -1) {
-				this.value = newSelectValue;
+			if(li.getAttribute("data-id").indexOf(newValue) !== -1) {
+				this.value = newValue;
 				this.text = this.elInput.value = li.getAttribute("data-text");
 				this.deselectAll();
 				li.classList.add("vm-cs-selected");
